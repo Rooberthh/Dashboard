@@ -32,17 +32,24 @@
             });
         }
 
-        public function statuses() {
+        public function owner()
+        {
+            return $this->belongsTo(User::class, 'user_id');
+        }
+
+        public function statuses()
+        {
             return $this->hasMany(Status::class)->orderBy('order')->orderBy('updated_at', 'desc');
         }
 
-        public function members() {
-            return DB::table('board_members')->select('user_id')->where('board_id', $this->id)->pluck('user_id');
+        public function members()
+        {
+            return $this->belongsToMany(User::class, 'board_members')->withTimestamps();
         }
 
-        public function invite($user)
+        public function invite(User $user)
         {
-            return DB::table('board_members')->insert(['user_id' => $user, 'board_id' => $this->id]);
+            return $this->members()->attach($user);
         }
 
         public function deleteMember($user)

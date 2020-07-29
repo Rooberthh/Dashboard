@@ -11,12 +11,15 @@
         /** @test */
         function a_user_can_delete_a_board ()
         {
-            $board = create('App\Models\Board');
+            $this->signIn();
 
-            $this->json('delete', $board->path(), ['user_id' => 1])
+            $board = create('App\Models\Board', ['user_id' => auth()->id()]);
+
+            $this->actingAs($board->owner)
+                ->json('delete', $board->path())
                 ->assertStatus(200);
 
-            $this->assertDatabaseMissing('boards', $board->toArray());
+            $this->assertDatabaseMissing('boards', $board->only('id'));
         }
 
         /** @test */

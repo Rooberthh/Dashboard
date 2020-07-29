@@ -11,6 +11,7 @@
 
     class BoardsController extends Controller
     {
+
         public function index(Request $request)
         {
             $id = (int)$request->get('user_id');
@@ -73,9 +74,7 @@
         {
             $board = Board::find($id);
 
-            if((int)$board->user_id !== (int)$request->get('user_id')){
-                return response('You do not have access to delete board', 403);
-            }
+            $this->authorize('manage', $board);
 
             $board->delete();
 
