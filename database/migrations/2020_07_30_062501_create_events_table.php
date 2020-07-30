@@ -23,10 +23,12 @@ class CreateEventsTable extends Migration
             $table->datetime('started_at');
             $table->datetime('ended_at');
             $table->timestamps();
-
+            /*
             $table->foreign('calendar_id')
-                ->references('id')->on('calendars')
+                ->references('id')
+                ->on('calendars')
                 ->onDelete('cascade');
+            */
         });
     }
 

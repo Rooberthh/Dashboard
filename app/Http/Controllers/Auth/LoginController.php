@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Google;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use Google_Client;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 
 class LoginController extends Controller
@@ -43,7 +46,9 @@ class LoginController extends Controller
 
     public function redirectToProvider()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->scopes(config('services.google.scopes'))
+            ->redirect();
     }
 
     /**
@@ -55,16 +60,18 @@ class LoginController extends Controller
     {
         $user = Socialite::driver('google')->stateless()->user();
 
-        $user_found = User::where('email', $user->getEmail())->first();
-
+        $user_found = User::where('email', $user->email)->first();
         if($user_found) {
             Auth::login($user_found);
             return redirect('/');
         } else {
-            $new_user = User::updateOrCreate([
+            $new_user = User::updateOrCreate(
+                ['email' => $user->getEmail()],
+                [
                             'name' => $user->getName(),
                             'email' => $user->getEmail(),
                             'provider_id' => $user->getId(),
+                            'token' => $user->token
                         ]);
             Auth::login($new_user, true);
 

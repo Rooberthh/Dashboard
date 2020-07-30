@@ -4,6 +4,7 @@
     namespace App\Models;
 
 
+    use Carbon\Carbon;
     use Illuminate\Database\Eloquent\Model;
 
     class Event extends Model
@@ -29,5 +30,15 @@
         public function getDurationAttribute()
         {
             return $this->started_at->diffForHumans($this->ended_at, true);
+        }
+
+        public function scopeBetweenDates($query, $to, $from)
+        {
+            return $query->where(['started_at', '<', $to], ['ended_at', '>', $from]);
+        }
+
+        public function scopeFromToday($query)
+        {
+            return $query->where(['started_at', '>', Carbon::now()]);
         }
     }

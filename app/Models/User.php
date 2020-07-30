@@ -2,9 +2,11 @@
 
     namespace App\Models;
 
+use App\Jobs\SynchronizeGoogleCalendars;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Socialite\Facades\Socialite;
 
 class User extends Authenticatable
 {
@@ -16,7 +18,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'provider_id'
+        'name', 'email', 'password', 'provider_id', 'token'
     ];
 
     /**
@@ -35,7 +37,17 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'token' => 'json'
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            SynchronizeGoogleCalendars::dispatch($user);
+        });
+    }
 
     public function boards()
     {
@@ -45,5 +57,10 @@ class User extends Authenticatable
     public function calendars()
     {
         return $this->hasMany(Calendar::class);
+    }
+
+    public function events()
+    {
+        return $this->hasManyThrough(Event::class, Calendar::class);
     }
 }

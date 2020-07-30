@@ -13,6 +13,7 @@ class CreateCalendarsTable extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('calendars');
         Schema::create('calendars', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('user_id');
@@ -21,9 +22,12 @@ class CreateCalendarsTable extends Migration
             $table->string("color");
             $table->string("timezone");
             $table->timestamps();
-
+            /*
             $table->foreign('user_id')
-                    ->references('id')->on('users')->onDelete('cascade');
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('cascade');
+            */
         });
     }
 

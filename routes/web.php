@@ -19,11 +19,9 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::name('google.index')->get('google', 'GoogleAccountController@index');
-Route::name('google.store')->get('google/oauth', 'GoogleAccountController@store');
-Route::name('google.destroy')->get('google/{googleAccount}', 'GoogleAccountController@destroy');
-
 Route::get('login/google', 'Auth\LoginController@redirectToProvider');
 Route::get('login/google/callback', 'Auth\LoginController@handleProviderCallback');
+
+Route::name('event.index')->get('event', 'EventsController@index');
 
 Route::get('/home', 'HomeController@index')->name('home');
