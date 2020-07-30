@@ -3,6 +3,7 @@
     namespace App\Models;
 
 use App\Jobs\SynchronizeGoogleCalendars;
+use App\Traits\Synchronizable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +11,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, Synchronizable;
 
     /**
      * The attributes that are mass assignable.
@@ -40,15 +41,6 @@ class User extends Authenticatable
         'token' => 'json'
     ];
 
-    public static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($user) {
-            SynchronizeGoogleCalendars::dispatch($user);
-        });
-    }
-
     public function boards()
     {
         return $this->hasMany(Board::class);
@@ -62,5 +54,10 @@ class User extends Authenticatable
     public function events()
     {
         return $this->hasManyThrough(Event::class, Calendar::class);
+    }
+
+    public function synchronize()
+    {
+        SynchronizeGoogleCalendars::dispatch($this);
     }
 }
