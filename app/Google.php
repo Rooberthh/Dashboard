@@ -13,7 +13,7 @@
             $client = new \Google_Client();
             $client->setClientId(config('services.google.client_id'));
             $client->setClientSecret(config('services.google.client_secret'));
-            $client->setRedirectUri(config('services.google.redirect_uri'));
+            $client->setRedirectUri(config('services.google.redirect'));
             $client->setScopes(config('services.google.scopes'));
             $client->setApprovalPrompt(config('services.google.approval_prompt'));
             $client->setAccessType(config('services.google.access_type'));
@@ -36,5 +36,19 @@
             $classname = "Google_Service_$service";
 
             return new $classname($this->client);
+        }
+
+        public function connectUsing($token)
+        {
+            $this->client->setAccessToken($token);
+
+            return $this;
+        }
+
+        public function revokeToken($token = null)
+        {
+            $token = $token ?? $this->client->getAccessToken();
+
+            return $this->client->revokeToken($token);
         }
     }

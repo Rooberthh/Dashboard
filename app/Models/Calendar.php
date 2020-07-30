@@ -10,9 +10,9 @@
     {
         protected $fillable = ['google_id', 'name', 'color', 'timezone'];
 
-        public function googleAccount()
+        public function owner()
         {
-            return $this->belongsTo(GoogleAccount::class);
+            return $this->belongsTo(User::class);
         }
 
         public function events()

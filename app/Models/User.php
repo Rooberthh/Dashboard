@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'provider_id'
     ];
 
     /**
@@ -42,10 +42,8 @@ class User extends Authenticatable
         return $this->hasMany(Board::class);
     }
 
-    public function googleAccounts()
+    public function calendars()
     {
-        return $this->hasMany(GoogleAccount::class);
+        return $this->hasMany(Calendar::class);
     }
-
-
 }
