@@ -11,8 +11,6 @@
     {
         public function index()
         {
-            SynchronizeGoogleCalendars::dispatch(auth()->user());
-
             $events = auth()->user()->events()
                 ->orderBy('started_at', 'desc')
                 ->get();

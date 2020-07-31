@@ -14,36 +14,29 @@ class SynchronizeGoogleEvents extends SynchronizeGoogleResource implements Shoul
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $calendar;
-
-    public function __construct($calendar)
-    {
-        $this->calendar = $calendar;
-    }
-
     public function getGoogleService()
     {
         return app(Google::class)
-            ->connectUsing($this->calendar->owner->token)
+            ->connectUsing($this->synchronizable->owner->token)
             ->service('Calendar');
     }
 
     public function getGoogleRequest($service, $options)
     {
         return $service->events->listEvents(
-            $this->calendar->google_id, $options
+            $this->synchronizable->google_id, $options
         );
     }
 
     public function syncItem($googleEvent)
     {
         if ($googleEvent->status === 'cancelled') {
-            return $this->calendar->events()
+            return $this->synchronizable->events()
                 ->where('google_id', $googleEvent->id)
                 ->delete();
         }
 
-        $this->calendar->events()->updateOrCreate(
+        $this->synchronizable->events()->updateOrCreate(
             [
                 'google_id' => $googleEvent->id,
             ],
@@ -67,5 +60,10 @@ class SynchronizeGoogleEvents extends SynchronizeGoogleResource implements Shoul
         $rawDatetime = $googleDatetime->dateTime ?: $googleDatetime->date;
 
         return Carbon::parse($rawDatetime)->setTimezone('UTC');
+    }
+
+    public function dropAllSyncedItems()
+    {
+        $this->synchronizable->events()->delete();
     }
 }

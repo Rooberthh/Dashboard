@@ -13,17 +13,10 @@ class SynchronizeGoogleCalendars extends SynchronizeGoogleResource implements Sh
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $user;
-
-    public function __construct($user)
-    {
-        $this->user = $user;
-    }
-
     public function getGoogleService()
     {
         return app(Google::class)
-            ->connectUsing($this->user->token)
+            ->connectUsing($this->synchronizable->token)
             ->service('Calendar');
     }
 
@@ -36,16 +29,22 @@ class SynchronizeGoogleCalendars extends SynchronizeGoogleResource implements Sh
     {
 
         if ($googleCalendar->deleted) {
-            return $this->user->calendars()
+            return $this->synchronizable->calendars()
                 ->where('google_id', $googleCalendar->id)
                 ->get()->each->delete();
         }
 
-        $this->user->calendars()->create([
+        $this->synchronizable->calendars()->create([
             'google_id' => $googleCalendar->id,
             'name' => $googleCalendar->summary,
             'color' => $googleCalendar->backgroundColor,
             'timezone' => $googleCalendar->timeZone,
         ]);
+    }
+
+    public function dropAllSyncedItems()
+    {
+        // Here we use `each->delete()` to make sure model listeners are called.
+        $this->synchronizable->calendars->each->delete();
     }
 }

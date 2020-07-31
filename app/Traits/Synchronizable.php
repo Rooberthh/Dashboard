@@ -10,12 +10,12 @@
     {
         public static function bootSynchronizable()
         {
-            static::created(function ($synchronizable) {
-                $synchronizable->synchronization()->create();
+            static::created(function ($model) {
+                $model->synchronization()->create();
             });
 
-            static::deleting(function ($synchronizable) {
-                optional($synchronizable->synchronization)->delete();
+            static::deleting(function ($model) {
+                optional($model->synchronization)->delete();
             });
         }
 

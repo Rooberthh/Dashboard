@@ -19,14 +19,11 @@ class Synchronization extends Model
     {
         parent::boot();
 
-        // Before creating a new synchronization,
-        // ensure the UUID and the `last_synchronized_at` are set.
         static::creating(function ($synchronization) {
             $synchronization->id = Uuid::uuid4();
             $synchronization->last_synchronized_at = now();
         });
 
-        // Initial ping.
         static::created(function ($synchronization) {
             $synchronization->ping();
         });
