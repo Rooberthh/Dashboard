@@ -39,6 +39,6 @@
 
         public function scopeFromToday($query)
         {
-            return $query->where(['started_at', '>', Carbon::now()]);
+            return $query->where(['started_at', '>=', Carbon::now()]);
         }
     }
