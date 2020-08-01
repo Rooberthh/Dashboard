@@ -16,14 +16,14 @@
         {
             $boards = auth()->user()->accessibleBoards();
 
-            return view('boards.index', ['boards', $boards]);
+            return view('boards.index', ['boards' => $boards]);
         }
 
         public function show($id)
         {
             $board = Board::with('statuses.tasks.objectives')->findOrFail($id);
 
-            return response($board, 200);
+            return view('boards.show', compact('board', $board));
         }
 
         /**

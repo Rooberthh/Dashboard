@@ -13,7 +13,14 @@ class BoardMembersTable extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('board_members', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('board_id');
+            $table->unsignedInteger('user_id');
+            $table->timestamps();
+
+            $table->index(['board_id', 'user_id']);
+        });
     }
 
     /**
@@ -23,6 +30,6 @@ class BoardMembersTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('board_members');
     }
 }

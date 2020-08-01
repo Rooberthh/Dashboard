@@ -23,7 +23,7 @@
     <div id="app">
         @include('layouts.nav')
 
-        <main class="py-4 container mx-auto">
+        <main class="container mx-auto">
             @yield('content')
         </main>
     </div>

@@ -43,7 +43,7 @@ class User extends Authenticatable
 
     public function boards()
     {
-        return $this->hasMany(Board::class);
+        return $this->hasMany(Board::class, 'user_id');
     }
 
     public function calendars()
@@ -63,7 +63,7 @@ class User extends Authenticatable
 
     public function accessibleBoards()
     {
-        return Board::where('owner_id', $this->id)
+        return Board::where('user_id', $this->id)
             ->orWhereHas('members', function ($query) {
                 $query->where('user_id', $this->id);
             })

@@ -13,19 +13,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::name('home')->get('/', function () {
+Route::get('/', function () {
     return view('home');
 });
+Route::get('/home', 'HomeController@index')->name('home');
 
 Auth::routes();
 
 Route::get('login/google', 'Auth\LoginController@redirectToProvider');
 Route::get('login/google/callback', 'Auth\LoginController@handleProviderCallback');
 
-Route::get('/home', 'HomeController@index')->name('home');
-
 Route::middleware(['auth'])->group(function () {
     Route::name('hue.index')->get('/hue', 'HueController@index');
     Route::name('events.index')->get('/events', 'EventsController@index');
+
     Route::name('boards.index')->get('/boards', 'BoardsController@index');
+    Route::name('boards.show')->get("/boards/{id}", 'BoardsController@show');
 });

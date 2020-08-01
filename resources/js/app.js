@@ -21,6 +21,8 @@ window.Vue = require('vue');
 
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 Vue.component('hue', require('./views/Hue').default);
+Vue.component('board-list', require('./components/BoardsList').default);
+Vue.component('board', require('./components/board').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
