@@ -26,6 +26,8 @@
         <main class="container mx-auto">
             @yield('content')
         </main>
+
+        <flash-message message="{{ session('flash') }}"></flash-message>
     </div>
 </body>
 </html>

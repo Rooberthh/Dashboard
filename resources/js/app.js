@@ -24,6 +24,10 @@ Vue.component('hue', require('./views/Hue').default);
 Vue.component('board-list', require('./components/BoardsList').default);
 Vue.component('board', require('./components/board').default);
 
+Vue.component('show-board', require('./components/ShowBoard').default);
+Vue.component('flash-message', require('./components/common/FlashMessage').default);
+
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
