@@ -86,6 +86,151 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/@q42philips/hue-color-converter/index.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@q42philips/hue-color-converter/index.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var colorPointsGamut_A = [[0.703, 0.296], [0.214, 0.709], [0.139, 0.081]];
+var colorPointsGamut_B = [[0.674, 0.322], [0.408, 0.517], [0.168, 0.041]];
+var colorPointsGamut_C = [[0.692, 0.308], [0.17, 0.7], [0.153, 0.048]];
+var colorPointsDefault = [[1.0, 0.0], [0.0, 1.0], [0.0, 0.0]];
+
+var GAMUT_A_BULBS_LIST = ["LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001"];
+var GAMUT_B_BULBS_LIST = ["LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007"];
+var GAMUT_C_BULBS_LIST = ["LLC020", "LST002"];
+var MULTI_SOURCE_LUMINAIRES = ["HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002"];
+
+module.exports = {
+  /**
+  * Calculate XY color points for a given RGB value.
+  * @param {number} red RGB red value (0-255)
+  * @param {number} green RGB green value (0-255)
+  * @param {number} blue RGB blue value (0-255)
+  * @param {string} model Hue bulb model
+  * @returns {number[]}
+  */
+  calculateXY: function(red, green, blue, model) {
+    red = red / 255;
+    green = green / 255;
+    blue = blue / 255;
+    var r = red > 0.04045 ? Math.pow(((red + 0.055) / 1.055), 2.4000000953674316) : red / 12.92;
+    var g = green > 0.04045 ? Math.pow(((green + 0.055) / 1.055), 2.4000000953674316) : green / 12.92;
+    var b = blue > 0.04045 ? Math.pow(((blue + 0.055) / 1.055), 2.4000000953674316) : blue / 12.92;
+    var x = r * 0.664511 + g * 0.154324 + b * 0.162028;
+    var y = r * 0.283881 + g * 0.668433 + b * 0.047685;
+    var z = r * 8.8E-5 + g * 0.07231 + b * 0.986039;
+    var xy = [x / (x + y + z), y / (x + y + z)];
+    if (isNaN(xy[0])) {
+      xy[0] = 0.0;
+    }
+    
+    if (isNaN(xy[1])) {
+      xy[1] = 0.0;
+    }
+    
+    var colorPoints = colorPointsForModel(model);
+    var inReachOfLamps = checkPointInLampsReach(xy, colorPoints);
+    if (!inReachOfLamps) {
+      var pAB = getClosestPointToPoints(colorPoints[0], colorPoints[1], xy);
+      var pAC = getClosestPointToPoints(colorPoints[2], colorPoints[0], xy);
+      var pBC = getClosestPointToPoints(colorPoints[1], colorPoints[2], xy);
+      var dAB = getDistanceBetweenTwoPoints(xy, pAB);
+      var dAC = getDistanceBetweenTwoPoints(xy, pAC);
+      var dBC = getDistanceBetweenTwoPoints(xy, pBC);
+      var lowest = dAB;
+      var closestPoint = pAB;
+      if (dAC < dAB) {
+        lowest = dAC;
+        closestPoint = pAC;
+      }
+      
+      if (dBC < lowest) {
+        closestPoint = pBC;
+      }
+      
+      xy[0] = closestPoint[0];
+      xy[1] = closestPoint[1];
+    }
+    
+    xy[0] = precision(xy[0]);
+    xy[1] = precision(xy[1]);
+    return xy;
+  }
+};
+
+function colorPointsForModel(model) {
+  if (model == null) {
+    model = " ";
+  }
+  
+  if (GAMUT_B_BULBS_LIST.indexOf(model) == -1 && MULTI_SOURCE_LUMINAIRES.indexOf(model) == -1) {
+    if(GAMUT_A_BULBS_LIST.indexOf(model) >= 0) {
+      return colorPointsGamut_A;
+    } else if(GAMUT_C_BULBS_LIST.indexOf(model) >= 0) {
+      return colorPointsGamut_C;
+    } else {
+      return colorPointsDefault;
+    }
+  } else {
+    return colorPointsGamut_B;
+  }
+}
+
+function checkPointInLampsReach(point, colorPoints) {
+  if (point != null && colorPoints != null) {
+    var red = colorPoints[0];
+    var green = colorPoints[1];
+    var blue = colorPoints[2];
+    var v1 = [green[0] - red[0], green[1] - red[1]];
+    var v2 = [blue[0] - red[0], blue[1] - red[1]];
+    var q = [point[0] - red[0], point[1] - red[1]];
+    var s = crossProduct(q, v2) / crossProduct(v1, v2);
+    var t = crossProduct(v1, q) / crossProduct(v1, v2);
+    return s >= 0.0 && t >= 0.0 && s + t <= 1.0;
+  } else {
+    return false;
+  }
+}
+
+function crossProduct(point1, point2) {
+  return point1[0] * point2[1] - point1[1] * point2[0];
+}
+
+function getClosestPointToPoints(pointA, pointB, pointP) {
+  if (pointA != null && pointB != null && pointP != null) {
+    var pointAP = [pointP[0] - pointA[0], pointP[1] - pointA[1]];
+    var pointAB = [pointB[0] - pointA[0], pointB[1] - pointA[1]];
+    var ab2 = pointAB[0] * pointAB[0] + pointAB[1] * pointAB[1];
+    var apAb = pointAP[0] * pointAB[0] + pointAP[1] * pointAB[1];
+    var t = apAb / ab2;
+    if(t < 0.0) {
+      t = 0.0;
+    } else if(t > 1.0) {
+      t = 1.0;
+    }
+    
+    return [pointA[0] + pointAB[0] * t, pointA[1] + pointAB[1] * t];
+  } else {
+    return null;
+  }
+}
+
+function getDistanceBetweenTwoPoints(pointA, pointB) {
+  var dx = pointA[0] - pointB[0];
+  var dy = pointA[1] - pointB[1];
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  return dist;
+}
+
+function precision(d) {
+  return Math.round(10000.0 * d) / 10000.0;
+}
+
+/***/ }),
+
 /***/ "./node_modules/axios/index.js":
 /*!*************************************!*\
   !*** ./node_modules/axios/index.js ***!
@@ -1927,6 +2072,209 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     console.log('Component mounted.');
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/views/Hue.vue?vue&type=script&lang=js&":
+/*!*********************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/views/Hue.vue?vue&type=script&lang=js& ***!
+  \*********************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _q42philips_hue_color_converter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @q42philips/hue-color-converter */ "./node_modules/@q42philips/hue-color-converter/index.js");
+/* harmony import */ var _q42philips_hue_color_converter__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_q42philips_hue_color_converter__WEBPACK_IMPORTED_MODULE_1__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      baseUrl: "https://".concat("192.168.1.141", "/api/").concat("9JweNzmfKHxE-TCCfubTILSZkOc-KsRP6GymFFBq"),
+      lights: {},
+      rooms: {}
+    };
+  },
+  created: function created() {
+    this.getRooms();
+    this.getLights();
+  },
+  methods: {
+    setOfficeRed: function setOfficeRed() {
+      var lightOn = {
+        "on": true,
+        "xy": [0.675, 0.322],
+        "bri": 254
+      };
+      var lightOff = {
+        "on": false
+      };
+      var times = 0;
+      var ref = this;
+      var cuddle = setInterval(function () {
+        times++;
+
+        if (times % 2 === 0) {
+          ref.setOfficeLamp(lightOn);
+        } else {
+          ref.setOfficeLamp(lightOff);
+        }
+
+        if (times === 10 * 2) {
+          clearInterval(cuddle);
+        }
+      }, 1000);
+    },
+    setOfficeLamp: function setOfficeLamp(data) {
+      var url = this.baseUrl + "/lights/7/state";
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(url, data).then(function () {})["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    getRooms: function getRooms() {
+      var _this = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(this.baseUrl + "/groups").then(function (response) {
+        var arr = [],
+            keys = Object.keys(response.data);
+
+        for (var i = 0, n = keys.length; i < n; i++) {
+          var key = keys[i];
+          arr[key] = response.data[key];
+        }
+
+        _this.rooms = arr.filter(function (item) {
+          return item != null && item.type === "Room";
+        });
+      });
+    },
+    getLights: function getLights() {
+      var _this2 = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(this.baseUrl + "/lights").then(function (response) {
+        _this2.lights = response.data;
+      });
+    },
+    setLight: function setLight(event, lightNumber) {
+      var url = this.baseUrl + "/lights/".concat(lightNumber, "/state");
+      var data = {
+        "on": event.currentTarget.checked,
+        "bri": 254
+      };
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(url, data)["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    setColorLight: function setColorLight(event, lightNumber) {
+      var rgb = this.hexToRgbA(event.currentTarget.value);
+      var xy = _q42philips_hue_color_converter__WEBPACK_IMPORTED_MODULE_1___default.a.calculateXY(rgb.r, rgb.g, rgb.b);
+      var url = this.baseUrl + "/lights/".concat(lightNumber, "/state");
+      var data = {
+        "on": true,
+        "xy": xy,
+        "bri": 254
+      };
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(url, data)["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    hexToRgbA: function hexToRgbA(hex) {
+      var c;
+
+      if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+
+        if (c.length === 3) {
+          c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+
+        c = '0x' + c.join('');
+        return {
+          r: c >> 16 & 255,
+          g: c >> 8 & 255,
+          b: c & 255
+        };
+      }
+    },
+    cie_to_rgb: function cie_to_rgb(x, y, brightness) {
+      //Set to maximum brightness if no custom value was given (Not the slick ECMAScript 6 way for compatibility reasons)
+      if (brightness === undefined) {
+        brightness = 254;
+      }
+
+      var z = 1.0 - x - y;
+      var Y = (brightness / 254).toFixed(2);
+      var X = Y / y * x;
+      var Z = Y / y * z; //Convert to RGB using Wide RGB D65 conversion
+
+      var red = X * 1.656492 - Y * 0.354851 - Z * 0.255038;
+      var green = -X * 0.707196 + Y * 1.655397 + Z * 0.036152;
+      var blue = X * 0.051713 - Y * 0.121364 + Z * 1.011530; //If red, green or blue is larger than 1.0 set it back to the maximum of 1.0
+
+      if (red > blue && red > green && red > 1.0) {
+        green = green / red;
+        blue = blue / red;
+        red = 1.0;
+      } else if (green > blue && green > red && green > 1.0) {
+        red = red / green;
+        blue = blue / green;
+        green = 1.0;
+      } else if (blue > red && blue > green && blue > 1.0) {
+        red = red / blue;
+        green = green / blue;
+        blue = 1.0;
+      } //Reverse gamma correction
+
+
+      red = red <= 0.0031308 ? 12.92 * red : (1.0 + 0.055) * Math.pow(red, 1.0 / 2.4) - 0.055;
+      green = green <= 0.0031308 ? 12.92 * green : (1.0 + 0.055) * Math.pow(green, 1.0 / 2.4) - 0.055;
+      blue = blue <= 0.0031308 ? 12.92 * blue : (1.0 + 0.055) * Math.pow(blue, 1.0 / 2.4) - 0.055; //Convert normalized decimal to decimal
+
+      red = Math.round(red * 255);
+      green = Math.round(green * 255);
+      blue = Math.round(blue * 255);
+      if (isNaN(red)) red = 0;
+      if (isNaN(green)) green = 0;
+      if (isNaN(blue)) blue = 0;
+      return this.rgbToHex(red, green, blue);
+    },
+    rgbToHex: function rgbToHex(r, g, b) {
+      return "#" + this.componentTohex(r) + this.componentTohex(g) + this.componentTohex(b);
+    },
+    componentTohex: function componentTohex(c) {
+      var hex = c.toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    }
   }
 });
 
@@ -37556,6 +37904,126 @@ render._withStripped = true
 
 /***/ }),
 
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9&":
+/*!*************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9& ***!
+  \*************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c(
+      "button",
+      { staticClass: "btn btn-primary", on: { click: _vm.setOfficeRed } },
+      [_vm._v("\n        Cuddles\n    ")]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "flex flex-wrap my-6 -mx-3" },
+      _vm._l(_vm.rooms, function(room) {
+        return _c(
+          "div",
+          { key: room.name, staticClass: "sm:w-1/2 md:w-1/3 px-3" },
+          [
+            _c(
+              "div",
+              { staticClass: "card shadow-md p-3" },
+              [
+                _c("h2", { staticClass: "text-xl" }, [
+                  _vm._v(_vm._s(room.name))
+                ]),
+                _vm._v(" "),
+                _vm._l(room.lights, function(lightNumber, index) {
+                  return _c("div", { key: index, staticClass: "my-4" }, [
+                    !!_vm.lights[lightNumber]
+                      ? _c("div", [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(_vm.lights[lightNumber].name) +
+                              "\n                        "
+                          ),
+                          _c(
+                            "div",
+                            {
+                              staticClass:
+                                "relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+                            },
+                            [
+                              _c("input", {
+                                staticClass:
+                                  "toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer",
+                                attrs: {
+                                  type: "checkbox",
+                                  id: _vm.lights[lightNumber].uniqueid
+                                },
+                                domProps: {
+                                  checked: _vm.lights[lightNumber].state.on
+                                },
+                                on: {
+                                  change: function($event) {
+                                    return _vm.setLight($event, lightNumber)
+                                  }
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c("label", {
+                                staticClass:
+                                  "toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer",
+                                attrs: { for: _vm.lights[lightNumber].uniqueid }
+                              })
+                            ]
+                          ),
+                          _vm._v(" "),
+                          !!_vm.lights[lightNumber].state.xy
+                            ? _c("input", {
+                                attrs: { type: "color" },
+                                domProps: {
+                                  value: _vm.cie_to_rgb(
+                                    _vm.lights[lightNumber].state.xy[0],
+                                    _vm.lights[lightNumber].state.xy[1],
+                                    _vm.lights[lightNumber].state.bri
+                                  )
+                                },
+                                on: {
+                                  change: function($event) {
+                                    return _vm.setColorLight(
+                                      $event,
+                                      lightNumber
+                                    )
+                                  }
+                                }
+                              })
+                            : _vm._e()
+                        ])
+                      : _vm._e()
+                  ])
+                })
+              ],
+              2
+            )
+          ]
+        )
+      }),
+      0
+    )
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js":
 /*!********************************************************************!*\
   !*** ./node_modules/vue-loader/lib/runtime/componentNormalizer.js ***!
@@ -49744,6 +50212,7 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('example-component', __webpack_require__(/*! ./components/ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue")["default"]);
+Vue.component('hue', __webpack_require__(/*! ./views/Hue */ "./resources/js/views/Hue.vue")["default"]);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -49865,6 +50334,75 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/views/Hue.vue":
+/*!************************************!*\
+  !*** ./resources/js/views/Hue.vue ***!
+  \************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Hue.vue?vue&type=template&id=3162a1a9& */ "./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9&");
+/* harmony import */ var _Hue_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Hue.vue?vue&type=script&lang=js& */ "./resources/js/views/Hue.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _Hue_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/views/Hue.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/views/Hue.vue?vue&type=script&lang=js&":
+/*!*************************************************************!*\
+  !*** ./resources/js/views/Hue.vue?vue&type=script&lang=js& ***!
+  \*************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Hue_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./Hue.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/views/Hue.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Hue_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9&":
+/*!*******************************************************************!*\
+  !*** ./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9& ***!
+  \*******************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./Hue.vue?vue&type=template&id=3162a1a9& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/views/Hue.vue?vue&type=template&id=3162a1a9&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Hue_vue_vue_type_template_id_3162a1a9___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 
