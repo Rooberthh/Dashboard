@@ -12,14 +12,14 @@
     class BoardsController extends Controller
     {
 
-        public function index(Request $request)
+        public function index()
         {
-            $id = (int)$request->get('user_id');
+            $boards = auth()->user()->accessibleBoards();
 
-            return $this->accessibleBoards($id);
+            return view('boards.index', ['boards', $boards]);
         }
 
-        public function show($id, Request $request)
+        public function show($id)
         {
             $board = Board::with('statuses.tasks.objectives')->findOrFail($id);
 
@@ -70,7 +70,7 @@
          * @param $id
          * @return Response|\Laravel\Lumen\Http\ResponseFactory
          */
-        public function destroy($id, Request $request)
+        public function destroy($id)
         {
             $board = Board::find($id);
 
@@ -80,15 +80,4 @@
 
             return response('Board have been deleted', 200);
         }
-
-        private function accessibleBoards($user)
-        {
-            $allBoardsByUser = Board::where('user_id', $user)->get();
-            $boardsByMember = DB::table('board_members')->where('user_id', $user)->pluck('board_id');
-            $boards = Board::find($boardsByMember);
-
-
-            return $allBoardsByUser->concat($boards);
-        }
-
     }

@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::name('home')->get('/', function () {
+    return view('home');
 });
 
 Auth::routes();
@@ -22,6 +22,10 @@ Auth::routes();
 Route::get('login/google', 'Auth\LoginController@redirectToProvider');
 Route::get('login/google/callback', 'Auth\LoginController@handleProviderCallback');
 
-Route::name('event.index')->get('event', 'EventsController@index');
-
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::middleware(['auth'])->group(function () {
+    Route::name('hue.index')->get('/hue', 'HueController@index');
+    Route::name('events.index')->get('/events', 'EventsController@index');
+    Route::name('boards.index')->get('/boards', 'BoardsController@index');
+});

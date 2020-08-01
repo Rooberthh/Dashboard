@@ -60,4 +60,13 @@ class User extends Authenticatable
     {
         SynchronizeGoogleCalendars::dispatch($this);
     }
+
+    public function accessibleBoards()
+    {
+        return Board::where('owner_id', $this->id)
+            ->orWhereHas('members', function ($query) {
+                $query->where('user_id', $this->id);
+            })
+            ->get();
+    }
 }
