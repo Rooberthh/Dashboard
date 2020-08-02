@@ -59,7 +59,7 @@ Vue.mixin({
 
 window.events = new Vue();
 
-window.flash = function (message, level = 'success'){
+window.flash = function (message, level = "default"){
     window.events.$emit('flash', {message, level});
 }; // flash('my flash message')
 

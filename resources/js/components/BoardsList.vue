@@ -6,21 +6,21 @@
 
 <script>
     import board from './Board'
-    import collection from './mixins/collection'
-    export default {
-        props: ['boards'],
-        components: {board},
-        mixins: [collection],
-        data() {
-            return {
-                loading: false,
-            }
-        },
-        created() {
-            this.items = this.boards
-        },
-        methods: {
-        }
+            import collection from './mixins/Collection'
+            export default {
+                props: ['boards'],
+                components: {board},
+                mixins: [collection],
+                data() {
+                    return {
+                        loading: false,
+                    }
+                },
+                created() {
+                    this.items = this.boards
+                },
+                methods: {
+                }
     }
 </script>
 

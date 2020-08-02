@@ -24,11 +24,12 @@
     import draggable from 'vuedraggable'
 
     export default {
+        props: ['board'],
         components: {statusBoard, taskDetails, addStatus, draggable},
         mixins: [collection],
         data() {
             return {
-                board: {},
+                id: this.board.id
             }
         },
         created() {
@@ -39,17 +40,6 @@
             this.fetch();
         },
         methods: {
-            fetch() {
-                axios.get(this.getGatewayUrl() + "boards/" + this.$route.params.id)
-                    .then(response => {
-                        this.board = response.data;
-
-                        this.items = response.data.statuses;
-                    })
-                    .catch(error => {
-                        flash(error.message);
-                    });
-            },
             changeStatus(event) {
                 if(event.moved) {
                     let status = event.moved && event.moved.element;
@@ -59,7 +49,7 @@
                     });
 
                     if(status) {
-                        let url = this.getGatewayUrl() + `boards/${this.board.id}/statuses`;
+                        let url = this.getBaseUrl() + `/boards/${this.id}/statuses`;
                         axios.patch(url, {statuses: this.items})
                             .then(() => {
                                 flash('Statuses updated');
@@ -71,8 +61,18 @@
 
                 }
             },
+            fetch() {
+                let url = this.getBaseUrl() + `/boards/${this.id}`;
+                axios.get(url)
+                    .then(response => {
+                        this.items = response.data.statuses;
+                    })
+                    .catch( error => {
+                        flash(error.message);
+                    })
+            },
             updateStatus(status) {
-                let url = this.getGatewayUrl() + `boards/${this.board.id}/statuses/${status.id}`;
+                let url = this.getBaseUrl() + `/boards/${this.id}/statuses/${status.id}`;
                 axios.patch(url, status)
                     .then(() => {
                         flash('Status updated');

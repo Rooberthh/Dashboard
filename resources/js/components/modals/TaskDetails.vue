@@ -69,7 +69,7 @@
                 this.$emit('refetch');
             },
             update() {
-                axios.patch(this.getGatewayUrl() + `statuses/${this.task.status_id}/tasks/${this.task.id}`, this.task)
+                axios.patch(this.getBaseUrl() + `/statuses/${this.task.status_id}/tasks/${this.task.id}`, this.task)
                     .then(() => {
                         flash('Task have been updated');
 
@@ -80,7 +80,7 @@
                     });
             },
             destroy() {
-                axios.delete(this.getGatewayUrl() + `statuses/${this.task.status_id}/tasks/${this.task.id}`)
+                axios.delete(this.getBaseUrl() + `/statuses/${this.task.status_id}/tasks/${this.task.id}`)
                     .then(() => {
                         this.close();
                         flash('Task have been deleted');

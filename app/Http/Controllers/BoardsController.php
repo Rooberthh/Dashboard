@@ -19,9 +19,13 @@
             return view('boards.index', ['boards' => $boards]);
         }
 
-        public function show($id)
+        public function show($id, Request $request)
         {
             $board = Board::with('statuses.tasks.objectives')->findOrFail($id);
+
+            if($request->expectsJson()) {
+                return $board;
+            }
 
             return view('boards.show', compact('board', $board));
         }

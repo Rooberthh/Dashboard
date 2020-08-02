@@ -27,7 +27,7 @@
         data() {
             return {
                 dataSet: false,
-                endpoint: this.getGatewayUrl() + 'tasks/' + this.taskId + '/objectives'
+                endpoint: this.getBaseUrl()+ '/tasks/' + this.taskId + '/objectives'
             }
         },
         created(){

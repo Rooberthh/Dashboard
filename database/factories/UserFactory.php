@@ -58,7 +58,10 @@ $factory->define(Board::class, function (Faker $faker) {
     return [
         'name' => $faker->word,
         'user_id' => function() {
+        return 1;
+        /*
             return factory(User::class)->create()->id;
+        */
         }
     ];
 });

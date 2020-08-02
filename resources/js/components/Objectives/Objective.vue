@@ -22,7 +22,7 @@
                     body: this.objective.body,
                     completed: this.objective.completed,
                 },
-                endpoint: this.getGatewayUrl() + `tasks/${this.objective.task_id}/objectives/${this.objective.id}`
+                endpoint: this.getBaseUrl() + `/tasks/${this.objective.task_id}/objectives/${this.objective.id}`
             }
         },
         methods: {

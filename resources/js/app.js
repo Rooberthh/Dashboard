@@ -22,7 +22,7 @@ window.Vue = require('vue');
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 Vue.component('hue', require('./views/Hue').default);
 Vue.component('board-list', require('./components/BoardsList').default);
-Vue.component('board', require('./components/board').default);
+Vue.component('board', require('./components/Board').default);
 
 Vue.component('show-board', require('./components/ShowBoard').default);
 Vue.component('flash-message', require('./components/common/FlashMessage').default);

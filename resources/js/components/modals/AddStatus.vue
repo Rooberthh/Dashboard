@@ -51,7 +51,6 @@
         data() {
             return {
                 favoriteStatuses: [],
-                board_id: 0,
                 form: new Form({'name': '', 'color': '', 'board_id': this.board.id, 'favorite': ''})
             }
         },
@@ -62,7 +61,7 @@
         },
         methods: {
             addStatus() {
-                this.form.post(this.getGatewayUrl() + `boards/${this.board_id}/statuses`)
+                this.form.post(this.getBaseUrl() + `/boards/${this.board.id}/statuses`)
                     .then(response => {
                         this.$emit('created', response);
                         this.$modal.hide('add-status');
@@ -76,7 +75,7 @@
                 this.form.color = status.color;
             },
             getFavoritedStatuses() {
-                axios.get(this.getGatewayUrl() + "statuses/favorites")
+                axios.get(this.getBaseUrl() + "/statuses/favorites")
                     .then(response => {
                         this.favoriteStatuses = response.data;
                     });

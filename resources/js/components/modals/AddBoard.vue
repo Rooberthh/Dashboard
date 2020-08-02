@@ -29,7 +29,7 @@
         },
         methods: {
             addBoard() {
-                this.form.post(this.getGatewayUrl() + `boards`)
+                this.form.post(this.getBaseUrl() + `/boards`)
                     .then(response => {
                         this.$emit('created', response);
                         this.form.reset();

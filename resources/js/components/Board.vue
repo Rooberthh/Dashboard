@@ -4,6 +4,7 @@
             <a :href="url" class="full-link"></a>
             <div class="w-full">
                 <div class="flex h-32 bg-red-600">
+                    <font-awesome-icon :icon="['fas', 'stream']" class="m-auto text-6xl text-white"></font-awesome-icon>
                 </div>
                 <div class="py-5 px-3">
                     <h2 class="font-bold text-xl"> {{ this.name }}</h2>

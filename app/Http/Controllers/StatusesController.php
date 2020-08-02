@@ -9,7 +9,6 @@
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
     use Illuminate\Validation\ValidationException;
-    use Laravel\Lumen\Http\ResponseFactory;
 
     class StatusesController extends Controller
     {

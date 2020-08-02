@@ -106,7 +106,7 @@
         },
         methods: {
             updateStatus() {
-                let url = this.getGatewayUrl() + `boards/${this.board_id}/statuses/${this.item.id}` ;
+                let url = this.getBaseUrl() + `/boards/${this.status.board_id}/statuses/${this.item.id}` ;
                 this.form.patch(url)
                     .then(response => {
                         this.item = response;
@@ -118,7 +118,7 @@
                     })
             },
             destroy() {
-                let url = this.getGatewayUrl() + `boards/${this.board_id}/statuses/${this.item.id}` ;
+                let url = this.getBaseUrl() + `/boards/${this.status.board_id}/statuses/${this.item.id}` ;
                 axios.delete(url)
                     .then(() => {
                         flash('Status have been deleted');
@@ -146,7 +146,7 @@
                 }
             },
             updateTask(task) {
-                let url = this.getGatewayUrl() + `statuses/${this.status.id}/tasks/${task.id}`;
+                let url = this.getBaseUrl() + `/statuses/${this.status.id}/tasks/${task.id}`;
                 axios.patch(url, task)
                     .then(() => {
                         flash('Task updated');
@@ -156,7 +156,7 @@
                     });
             },
             updateAllTasks() {
-                let url = this.getGatewayUrl() + `statuses/${this.status.id}/tasks`;
+                let url = this.getBaseUrl() + `/statuses/${this.status.id}/tasks`;
                 axios.patch(url, {tasks: this.tasks})
                     .then(() => {
                         flash('Tasks updated');
@@ -166,7 +166,7 @@
                     });
             },
             addTask(){
-                let url = this.getGatewayUrl() + `statuses/${this.status.id}/tasks` ;
+                let url = this.getBaseUrl() + `/statuses/${this.status.id}/tasks` ;
                 axios.post(url, this.newTask)
                     .then(response => {
                         this.newTask.title = '';

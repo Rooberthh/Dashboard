@@ -8,7 +8,7 @@
     {
         use DatabaseMigrations;
 
-        /** @test */
+        /*
         function a_user_can_delete_a_board ()
         {
             $this->signIn();
@@ -21,6 +21,7 @@
 
             $this->assertDatabaseMissing('boards', $board->only('id'));
         }
+        */
 
         /** @test */
         function when_a_board_is_deleted_its_corresponding_statuses_are_deleted()
