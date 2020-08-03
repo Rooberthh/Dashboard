@@ -62,6 +62,7 @@
                     let temp = {
                         "url": this.getBaseUrl() + `/calendars/${calendar.id}/events`,
                         "backgroundColor": calendar.color,
+                        "borderColor": calendar.color,
                         "id": calendar.id,
                     };
 

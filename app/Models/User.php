@@ -3,6 +3,7 @@
     namespace App\Models;
 
 use App\Jobs\SynchronizeGoogleCalendars;
+use App\Jobs\WatchGoogleCalendars;
 use App\Traits\Synchronizable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -59,6 +60,11 @@ class User extends Authenticatable
     public function synchronize()
     {
         SynchronizeGoogleCalendars::dispatch($this);
+    }
+
+    public function watch()
+    {
+        WatchGoogleCalendars::dispatch($this);
     }
 
     public function accessibleBoards()

@@ -53,6 +53,9 @@
     border-color: #68D391;
 }
 .toggle-checkbox:checked + .toggle-label {
-    @apply bg-green-400;
-    background-color: #68D391;
+    @apply bg-green-400;  background-color: #68D391;
+}
+
+.hide {
+    display:none;
 }

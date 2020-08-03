@@ -9,10 +9,11 @@ class Synchronization extends Model
 {
     public $incrementing = false;
 
-    protected $fillable = ['token', 'last_synchronized_at'];
+    protected $fillable = ['token', 'last_synchronized_at', 'resource_id', 'expired_at'];
 
     protected $casts = [
-      'last_synchronized_at' => 'datetime',
+        'last_synchronized_at' => 'datetime',
+        'expired_at' => 'datetime'
     ];
 
     public static function boot()
@@ -25,7 +26,12 @@ class Synchronization extends Model
         });
 
         static::created(function ($synchronization) {
+            $synchronization->startListeningForChanges();
             $synchronization->ping();
+        });
+
+        static::deleting(function ($synchronization) {
+            $synchronization->stopListeningForChanges();
         });
     }
 
@@ -37,5 +43,48 @@ class Synchronization extends Model
     public function synchronizable()
     {
         return $this->morphTo();
+    }
+
+    public function asGoogleChannel()
+    {
+        return tap(new \Google_Service_Calendar_Channel(), function ($channel) {
+            $channel->setId($this->id);
+            $channel->setResourceId($this->resource_id);
+            $channel->setType('web_hook');
+            $channel->setAddress(config('services.google.webhook_uri'));
+        });
+    }
+
+    public function startListeningForChanges()
+    {
+        return $this->synchronizable->watch();
+    }
+
+    public function stopListeningForChanges()
+    {
+        // If resource_id is null then the synchronization
+        // does not have an associated Google Channel and
+        // therefore there is nothing to stop at this point.
+        if (! $this->resource_id) {
+            return;
+        }
+
+        $this->synchronizable
+            ->getGoogleService('Calendar')
+            ->channels->stop($this->asGoogleChannel());
+    }
+
+    public function refreshWebhook()
+    {
+        $this->stopListeningForChanges();
+
+        // Update the UUID since the previous one has
+        // already been associated to a Google Channel.
+        $this->id = Uuid::uuid4();
+        $this->save();
+
+        $this->startListeningForChanges();
+
+        return $this;
     }
 }

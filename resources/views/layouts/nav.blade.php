@@ -12,13 +12,21 @@
         @endif
         @if(Auth::check())
             <div class="flex ml-auto">
-                <span class="text-white">
-                    {{ Auth()->user()->name }}
-                </span>
-                <form method="POST" action="{{ route('logout') }}">
-                    {{ csrf_field() }}
-                    <button type="submit"  class="mr-6 text-white font-bold">Logout</button>
-                </form>
+                <dropdown>
+                    <template v-slot:trigger>
+                        <button type="button" id="profile">
+                            <img src="{{ gravatar_url(Auth()->user()->email) }}"
+                                 alt=" {{ Auth()->user() }}'s avatar"
+                                 class="rounded-full w-8"
+                            >
+                        </button>
+                    </template>
+                    <a class="block px-4 text-normal py-2" href="{{ route('logout') }}"
+                       onclick="event.preventDefault();
+                        document.getElementById('logout-form').submit();">
+                        {{ __('Logout') }}
+                    </a>
+                </dropdown>
             </div>
         @endif
         @if(!Auth::check())

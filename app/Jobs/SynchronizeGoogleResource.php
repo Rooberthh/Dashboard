@@ -24,7 +24,7 @@ abstract class SynchronizeGoogleResource
         $pageToken = null;
         $syncToken = $this->synchronization->token;
 
-        $service = $this->getGoogleService();
+        $service = $this->synchronizable->getGoogleService('Calendar');
         $tokens = compact('pageToken', 'syncToken');
 
         do {

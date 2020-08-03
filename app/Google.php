@@ -51,4 +51,16 @@
 
             return $this->client->revokeToken($token);
         }
+
+        public function connectWithSynchronizable($synchronizable)
+        {
+            $token = $this->getTokenFromSynchronizable($synchronizable);
+
+            return $this->connectUsing($token);
+        }
+
+        protected function getTokenFromSynchronizable($synchronizable)
+        {
+            return $synchronizable->token;
+        }
     }

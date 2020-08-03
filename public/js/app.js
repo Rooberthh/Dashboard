@@ -29128,6 +29128,7 @@ __webpack_require__.r(__webpack_exports__);
         var temp = {
           "url": this.getBaseUrl() + "/calendars/".concat(calendar.id, "/events"),
           "backgroundColor": calendar.color,
+          "borderColor": calendar.color,
           "id": calendar.id
         };
         this.calendarOptions.eventSources.push(temp);
@@ -87312,6 +87313,7 @@ Vue.component('board-list', __webpack_require__(/*! ./components/BoardsList */ "
 Vue.component('board', __webpack_require__(/*! ./components/Board */ "./resources/js/components/Board.vue")["default"]);
 Vue.component('show-board', __webpack_require__(/*! ./components/ShowBoard */ "./resources/js/components/ShowBoard.vue")["default"]);
 Vue.component('calendar', __webpack_require__(/*! ./components/Calendar */ "./resources/js/components/Calendar.vue")["default"]);
+Vue.component('dropdown', __webpack_require__(/*! ./components/common/Dropdown */ "./resources/js/components/common/Dropdown.vue")["default"]);
 Vue.component('flash-message', __webpack_require__(/*! ./components/common/FlashMessage */ "./resources/js/components/common/FlashMessage.vue")["default"]);
 /**
  * Next, we will create a fresh Vue application instance and attach it to

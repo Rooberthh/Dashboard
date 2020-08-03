@@ -26,6 +26,7 @@ Vue.component('board', require('./components/Board').default);
 
 Vue.component('show-board', require('./components/ShowBoard').default);
 Vue.component('calendar', require('./components/Calendar').default);
+Vue.component('dropdown', require('./components/common/Dropdown').default);
 Vue.component('flash-message', require('./components/common/FlashMessage').default);
 
 

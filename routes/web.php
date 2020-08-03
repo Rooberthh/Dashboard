@@ -20,8 +20,9 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Auth::routes();
 
-Route::get('login/google', 'Auth\LoginController@redirectToProvider');
+Route::name('google.index')->get('login/google', 'Auth\LoginController@redirectToProvider');
 Route::get('login/google/callback', 'Auth\LoginController@handleProviderCallback');
+Route::name('google.webhook')->post('google/webhook', 'GoogleWebhookController');
 
 Route::middleware(['auth'])->group(function () {
     Route::name('hue.index')->get('/hue', 'HueController@index');

@@ -4,6 +4,7 @@
     namespace App\Models;
 
 
+    use App\Jobs\WatchGoogleEvents;
     use Carbon\Carbon;
     use Illuminate\Database\Eloquent\Model;
 
@@ -44,5 +45,10 @@
         public function scopeFromToday($query)
         {
             return $query->where(['started_at', '>=', Carbon::now()]);
+        }
+
+        public function watch()
+        {
+            WatchGoogleEvents::dispatch($this);
         }
     }
