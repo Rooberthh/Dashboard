@@ -12,7 +12,13 @@
         @endif
         @if(Auth::check())
             <div class="flex ml-auto">
-                <a href="{{ route('logout') }}"  class="mr-6 text-white font-bold">Logout</a>
+                <span class="text-white">
+                    {{ Auth()->user()->name }}
+                </span>
+                <form method="POST" action="{{ route('logout') }}">
+                    {{ csrf_field() }}
+                    <button type="submit"  class="mr-6 text-white font-bold">Logout</button>
+                </form>
             </div>
         @endif
         @if(!Auth::check())

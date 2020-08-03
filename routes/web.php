@@ -29,4 +29,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::name('boards.index')->get('/boards', 'BoardsController@index');
     Route::name('boards.show')->get("/boards/{id}", 'BoardsController@show');
+
+    Route::get('api/events', 'EventsController@index');
+
+    Route::get('api/calendars/{calendar}/events', 'Api\CalendarEventsController@index');
 });
