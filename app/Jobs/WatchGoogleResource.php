@@ -4,6 +4,8 @@
     namespace App\Jobs;
 
 
+    use Carbon\Carbon;
+
     abstract class WatchGoogleResource
     {
         protected $synchronizable;

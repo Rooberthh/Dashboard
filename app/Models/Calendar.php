@@ -5,6 +5,7 @@
 
 
     use App\Jobs\SynchronizeGoogleEvents;
+    use App\Jobs\WatchGoogleEvents;
     use App\Traits\Synchronizable;
     use Illuminate\Database\Eloquent\Model;
 
@@ -27,5 +28,10 @@
         public function synchronize()
         {
             SynchronizeGoogleEvents::dispatch($this);
+        }
+
+        public function watch()
+        {
+            WatchGoogleEvents::dispatch($this);
         }
     }

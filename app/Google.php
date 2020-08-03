@@ -4,6 +4,9 @@
     namespace App;
 
 
+    use App\Models\Calendar;
+    use App\Models\User;
+
     class Google
     {
         protected $client;
@@ -61,6 +64,15 @@
 
         protected function getTokenFromSynchronizable($synchronizable)
         {
-            return $synchronizable->token;
+            switch (true) {
+                case $synchronizable instanceof User:
+                    return $synchronizable->token;
+
+                case $synchronizable instanceof Calendar:
+                    return $synchronizable->owner->token;
+
+                default:
+                    throw new \Exception("Invalid Synchronizable");
+            }
         }
     }
