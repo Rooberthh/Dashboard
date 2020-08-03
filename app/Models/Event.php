@@ -12,6 +12,10 @@
         protected $with = ['calendar'];
         protected $fillable = ['google_id', 'name', 'description', 'allday', 'started_at', 'ended_at'];
 
+        protected $casts = [
+            'allday' => 'boolean'
+        ];
+
         public function calendar()
         {
             return $this->belongsTo(Calendar::class);

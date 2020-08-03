@@ -5,8 +5,6 @@
 
 
     use App\Http\Controllers\Controller;
-    use App\Http\Resources\Event;
-    use App\Http\Resources\EventCollection;
     use App\Models\Calendar;
     use Carbon\Carbon;
     use Illuminate\Http\Request;
@@ -26,6 +24,7 @@
                 $e['title'] = $ev->name;
                 $e['start'] = $ev->started_at;
                 $e['end'] = $ev->ended_at;
+                $e['allDay'] = $ev->allday;
 
                 array_push($selected, $e);
             }
