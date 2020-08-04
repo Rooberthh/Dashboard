@@ -59,14 +59,9 @@
                 for (let i = 0; i < this.calendars.length; i++)
                 {
                     let calendar = this.calendars[i];
-                    let temp = {
-                        "url": this.getBaseUrl() + `/calendars/${calendar.id}/events`,
-                        "backgroundColor": calendar.color,
-                        "borderColor": calendar.color,
-                        "id": calendar.id,
-                    };
+                    let src = this.createEventSource(calendar);
 
-                    this.calendarOptions.eventSources.push(temp);
+                    this.calendarOptions.eventSources.push(src);
                 }
             },
             setCalendar(event) {
@@ -80,12 +75,16 @@
                     }
                 } else {
                     let calendar = this.calendars.find(x => x.id === parseInt(checkbox.value));
-                    let newSrc = {
-                        "url": this.getBaseUrl() + `/calendars/${calendar.id}/events`,
-                        "backgroundColor": calendar.color,
-                        "id": calendar.id,
-                    };
+                    let newSrc = this.createEventSource(calendar);
                     api.addEventSource(newSrc);
+                }
+            },
+            createEventSource(calendar) {
+                return {
+                    "url": this.getBaseUrl() + `/calendars/${calendar.id}/events`,
+                    "borderColor": calendar.color,
+                    "backgroundColor": calendar.color,
+                    "id": calendar.id,
                 }
             }
         }

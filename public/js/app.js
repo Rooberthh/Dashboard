@@ -29125,13 +29125,8 @@ __webpack_require__.r(__webpack_exports__);
     fetch: function fetch() {
       for (var i = 0; i < this.calendars.length; i++) {
         var calendar = this.calendars[i];
-        var temp = {
-          "url": this.getBaseUrl() + "/calendars/".concat(calendar.id, "/events"),
-          "backgroundColor": calendar.color,
-          "borderColor": calendar.color,
-          "id": calendar.id
-        };
-        this.calendarOptions.eventSources.push(temp);
+        var src = this.createEventSource(calendar);
+        this.calendarOptions.eventSources.push(src);
       }
     },
     setCalendar: function setCalendar(event) {
@@ -29147,13 +29142,17 @@ __webpack_require__.r(__webpack_exports__);
         var calendar = this.calendars.find(function (x) {
           return x.id === parseInt(checkbox.value);
         });
-        var newSrc = {
-          "url": this.getBaseUrl() + "/calendars/".concat(calendar.id, "/events"),
-          "backgroundColor": calendar.color,
-          "id": calendar.id
-        };
+        var newSrc = this.createEventSource(calendar);
         api.addEventSource(newSrc);
       }
+    },
+    createEventSource: function createEventSource(calendar) {
+      return {
+        "url": this.getBaseUrl() + "/calendars/".concat(calendar.id, "/events"),
+        "borderColor": calendar.color,
+        "backgroundColor": calendar.color,
+        "id": calendar.id
+      };
     }
   }
 });
